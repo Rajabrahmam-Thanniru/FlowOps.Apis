@@ -41,6 +41,12 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(refreshToken)) return Unauthorized("Refresh token missing.");
 
         var result = await _authService.RefreshTokenAsync(refreshToken, cancellationToken);
+        if (result == null) 
+        {
+            Response.Cookies.Delete("refreshToken");
+            return Unauthorized("Invalid or expired refresh token.");
+        }
+
         SetRefreshTokenCookie(result.RefreshToken);
         return Ok(new { result.AccessToken });
     }
@@ -61,6 +67,10 @@ public class AuthController : ControllerBase
             SameSite = SameSiteMode.Strict,
             Expires = System.DateTime.UtcNow.AddDays(7)
         };
+#if DEBUG
+        cookieOptions.Secure = false;
+        cookieOptions.SameSite = SameSiteMode.Lax;
+#endif
         Response.Cookies.Append("refreshToken", token, cookieOptions);
     }
 }

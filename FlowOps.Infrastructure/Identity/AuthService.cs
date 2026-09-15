@@ -70,14 +70,15 @@ public class AuthService : IAuthService
         var refreshToken = _jwtTokenGenerator.GenerateRefreshToken();
         var expiryDays = int.Parse(_configuration["JwtSettings:RefreshTokenExpirationDays"] ?? "7");
 
-        user.RefreshTokens.Add(new RefreshToken
+        var tokenEntity = new RefreshToken
         {
             Token = refreshToken,
             ExpiresAtUtc = _dateTimeProvider.UtcNow.AddDays(expiryDays),
             UserId = user.Id,
             TenantId = org.Id
-        });
+        };
 
+        _context.RefreshTokens.Add(tokenEntity);
         await _context.SaveChangesAsync(cancellationToken);
 
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
@@ -116,7 +117,7 @@ public class AuthService : IAuthService
         return new TokenResponseDto { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
-    public async Task<TokenResponseDto> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+    public async Task<TokenResponseDto?> RefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
         var tokenEntity = await _context.RefreshTokens
             .IgnoreQueryFilters()
@@ -129,7 +130,7 @@ public class AuthService : IAuthService
 
         if (tokenEntity == null || tokenEntity.IsRevoked || tokenEntity.ExpiresAtUtc <= _dateTimeProvider.UtcNow)
         {
-            throw new Exception("Invalid or expired refresh token.");
+            return null;
         }
 
         // Revoke the old token

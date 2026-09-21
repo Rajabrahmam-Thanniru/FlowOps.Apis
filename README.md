@@ -15,6 +15,13 @@ uses .NET 9 ASP.NET Core and Entity Framework Core dependencies.
 
 ## Command-line build
 
+Start the development database with `docker compose up -d db` before running
+the API. FlowOps connects to localhost port 5434, mapped to PostgreSQL port
+5432 inside the container. This avoids other local PostgreSQL instances on
+ports 5432 and 5433. Keep the host port in `docker-compose.yml` and
+`FlowOps.Api/appsettings.json` aligned. After changing the mapping, run
+`docker compose up -d db` again; the existing database volume is preserved.
+
 From this directory:
 
 ```powershell

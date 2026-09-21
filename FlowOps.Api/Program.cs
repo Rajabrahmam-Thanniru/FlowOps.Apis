@@ -19,6 +19,9 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+// Seed the database
+await FlowOps.Infrastructure.Persistence.ApplicationDbInitializer.SeedAsync(app.Services);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

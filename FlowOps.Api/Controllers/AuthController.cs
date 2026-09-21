@@ -18,12 +18,13 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto request, CancellationToken cancellationToken)
+    [HttpPost("register-practice")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> RegisterPractice([FromBody] RegisterDto request, CancellationToken cancellationToken)
     {
         var result = await _authService.RegisterAsync(request, cancellationToken);
-        SetRefreshTokenCookie(result.RefreshToken);
-        return StatusCode(201, new { result.AccessToken });
+        // Do not set cookies or return tokens, just a success message
+        return StatusCode(201, new { message = "Practice registered successfully." });
     }
 
     [HttpPost("login")]
